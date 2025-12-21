@@ -106,7 +106,7 @@
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="16dp"
         android:orientation="horizontal"
-        android:weightSum="2"
+        android:weightSum="3"
         app:layout_constraintTop_toBottomOf="@+id/cardProject">
 
         <!-- Attendance Button -->
@@ -115,11 +115,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="4dp"
             android:text="Attendance"
-            android:textSize="12sp"
+            android:textSize="10sp"
             android:backgroundTint="#2196F3"
-            app:icon="@android:drawable/ic_menu_my_calendar" />
+            app:icon="@android:drawable/ic_menu_my_calendar"
+            app:iconSize="16dp"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
         <!-- Daily Reports Button -->
         <Button
@@ -127,11 +130,29 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="8dp"
+            android:layout_marginHorizontal="4dp"
             android:text="Daily Reports"
-            android:textSize="12sp"
+            android:textSize="10sp"
             android:backgroundTint="#FF9800"
-            app:icon="@android:drawable/ic_menu_agenda" />
+            app:icon="@android:drawable/ic_menu_agenda"
+            app:iconSize="16dp"
+            android:maxLines="1"
+            android:ellipsize="end" />
+            
+        <!-- Material Button -->
+        <Button
+            android:id="@+id/btnOpenMaterials"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:text="Materials"
+            android:textSize="10sp"
+            android:backgroundTint="#9C27B0"
+            app:icon="@android:drawable/ic_menu_manage"
+            app:iconSize="16dp"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
     </LinearLayout>
 

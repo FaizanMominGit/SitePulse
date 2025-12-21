@@ -10,6 +10,7 @@ import androidx.work.WorkerParameters;
 import com.example.sitepulse.data.local.AppDatabase;
 import com.example.sitepulse.data.local.entity.Attendance;
 import com.example.sitepulse.data.local.entity.DailyReport;
+import com.example.sitepulse.data.local.entity.MaterialRequest;
 import com.example.sitepulse.data.local.entity.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -43,8 +44,9 @@ public class SyncWorker extends Worker {
         boolean taskSyncSuccess = syncTasks();
         boolean attendanceSyncSuccess = syncAttendance();
         boolean reportSyncSuccess = syncDailyReports();
+        boolean materialSyncSuccess = syncMaterialRequests();
 
-        if (taskSyncSuccess && attendanceSyncSuccess && reportSyncSuccess) {
+        if (taskSyncSuccess && attendanceSyncSuccess && reportSyncSuccess && materialSyncSuccess) {
             return Result.success();
         } else {
             return Result.retry();
@@ -155,10 +157,8 @@ public class SyncWorker extends Worker {
 
     private void uploadImageAndSyncReport(DailyReport report, CountDownLatch latch, boolean[] hasErrors) {
         if (report.imagePath != null && !report.imagePath.isEmpty()) {
-            // Upload Image First
             File file = new File(report.imagePath);
             if (!file.exists()) {
-                // File lost? Sync without image or fail? Let's sync without image for now.
                 syncReportToFirestore(report, null, latch, hasErrors);
                 return;
             }
@@ -183,7 +183,6 @@ public class SyncWorker extends Worker {
                     });
 
         } else {
-            // No image, just sync data
             syncReportToFirestore(report, null, latch, hasErrors);
         }
     }
@@ -217,5 +216,48 @@ public class SyncWorker extends Worker {
                     hasErrors[0] = true;
                     latch.countDown();
                 });
+    }
+    
+    private boolean syncMaterialRequests() {
+        List<MaterialRequest> unsyncedRequests = db.materialRequestDao().getUnsyncedRequests();
+        if (unsyncedRequests.isEmpty()) return true;
+
+        CountDownLatch latch = new CountDownLatch(unsyncedRequests.size());
+        boolean[] hasErrors = {false};
+
+        for (MaterialRequest request : unsyncedRequests) {
+            Map<String, Object> requestMap = new HashMap<>();
+            requestMap.put("id", request.id);
+            requestMap.put("projectId", request.projectId);
+            requestMap.put("userId", request.userId);
+            requestMap.put("itemName", request.itemName);
+            requestMap.put("quantity", request.quantity);
+            requestMap.put("unit", request.unit);
+            requestMap.put("urgency", request.urgency);
+            requestMap.put("status", request.status);
+            requestMap.put("date", request.date);
+
+            firestore.collection("material_requests").document(request.id)
+                    .set(requestMap)
+                    .addOnSuccessListener(aVoid -> {
+                        AppDatabase.databaseWriteExecutor.execute(() -> {
+                            request.isSynced = true;
+                            db.materialRequestDao().update(request);
+                            latch.countDown();
+                        });
+                    })
+                    .addOnFailureListener(e -> {
+                        hasErrors[0] = true;
+                        latch.countDown();
+                    });
+        }
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            return false;
+        }
+
+        return !hasErrors[0];
     }
 }

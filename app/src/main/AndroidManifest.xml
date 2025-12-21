@@ -80,6 +80,16 @@
             android:name=".CreateDprActivity"
             android:exported="false" />
 
+        <!-- Material List Activity -->
+        <activity
+            android:name=".MaterialListActivity"
+            android:exported="false" />
+
+        <!-- Create Material Activity -->
+        <activity
+            android:name=".CreateMaterialActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
