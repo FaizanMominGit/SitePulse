@@ -7,6 +7,17 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    
+    <!-- Camera Permissions -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
+    <!-- Queries for Android 11+ Package Visibility -->
+    <queries>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+    </queries>
 
     <application
         android:allowBackup="true"
@@ -17,6 +28,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SitePulse">
+        
+        <!-- FileProvider for Camera -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.sitepulse.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
         
         <!-- Login Activity (Launcher) -->
         <activity
@@ -46,6 +68,16 @@
         <!-- Attendance Activity -->
         <activity
             android:name=".AttendanceActivity"
+            android:exported="false" />
+
+        <!-- DPR List Activity -->
+        <activity
+            android:name=".DprListActivity"
+            android:exported="false" />
+
+        <!-- Create DPR Activity -->
+        <activity
+            android:name=".CreateDprActivity"
             android:exported="false" />
 
     </application>

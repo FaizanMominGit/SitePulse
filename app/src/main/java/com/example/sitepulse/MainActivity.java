@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView tvWelcome, tvDate, tvProjectName, tvLocation;
     private RecyclerView rvTasks;
-    private Button btnLogout, btnOpenAttendance;
+    private Button btnLogout, btnOpenAttendance, btnOpenDpr;
     private FloatingActionButton fabAddTask;
     
     private TaskAdapter taskAdapter;
@@ -75,6 +75,10 @@ public class MainActivity extends AppCompatActivity {
         
         btnOpenAttendance.setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, AttendanceActivity.class));
+        });
+
+        btnOpenDpr.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, DprListActivity.class));
         });
     }
 
@@ -113,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         btnLogout = findViewById(R.id.btnLogout);
         fabAddTask = findViewById(R.id.fabAddTask);
         btnOpenAttendance = findViewById(R.id.btnOpenAttendance);
+        btnOpenDpr = findViewById(R.id.btnOpenDpr);
 
         // Set Date
         String currentDate = new SimpleDateFormat("EEEE, MMM d", Locale.getDefault()).format(new Date());
