@@ -1,0 +1,24 @@
+# Android Studio project files
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.cxx
+*.hprof
+
+# Sensitive configuration files
+google-services.json
+
+# IDE files
+.idea/workspace.xml
+.idea/libraries
+
+# Gradle files
+.gradle/
+build/
+
+# Local properties
+local.properties
