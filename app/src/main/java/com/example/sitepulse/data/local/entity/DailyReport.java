@@ -8,18 +8,21 @@ import androidx.room.PrimaryKey;
 public class DailyReport {
     @PrimaryKey
     @NonNull
-    public String id; // UUID or Firebase ID
+    public String id;
 
     public String projectId;
     public String userId;
-    public long date; // Timestamp
+    public long date;
     public int laborCount;
     public String workDescription;
     public String hindrances;
-    public String imagePath; // Local path to the image file
-    public String imageUrl; // Cloud URL (after sync)
+    public String imagePath;
+    public String imageUrl;
     
     public boolean isSynced;
+
+    // No-argument constructor for Firestore
+    public DailyReport() {}
 
     public DailyReport(@NonNull String id, String projectId, String userId, long date, int laborCount, String workDescription, String hindrances, String imagePath) {
         this.id = id;

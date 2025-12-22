@@ -8,18 +8,21 @@ import androidx.room.PrimaryKey;
 public class MaterialRequest {
     @PrimaryKey
     @NonNull
-    public String id; // UUID or Firebase ID
+    public String id;
 
     public String projectId;
     public String userId;
-    public String itemName; // e.g., Cement
+    public String itemName;
     public double quantity;
-    public String unit; // e.g., Bags, Kg
-    public String urgency; // Low, Medium, High
-    public String status; // PENDING, APPROVED, REJECTED
-    public long date; // Timestamp
+    public String unit;
+    public String urgency;
+    public String status;
+    public long date;
     
     public boolean isSynced;
+
+    // No-argument constructor for Firestore
+    public MaterialRequest() {}
 
     public MaterialRequest(@NonNull String id, String projectId, String userId, String itemName, double quantity, String unit, String urgency, String status, long date) {
         this.id = id;

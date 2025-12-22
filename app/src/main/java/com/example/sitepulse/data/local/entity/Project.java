@@ -2,13 +2,14 @@ package com.example.sitepulse.data.local.entity;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "projects")
 public class Project {
     @PrimaryKey
     @NonNull
-    public String id; // Firebase Document ID
+    public String id = ""; // Initialized to prevent null issues with @NonNull
 
     public String name;
     public String location;
@@ -19,7 +20,13 @@ public class Project {
     public double longitude;
     public double radiusMeters; // e.g., 100.0 meters
 
-    public Project(@NonNull String id, String name, String location, String description, double latitude, double longitude, double radiusMeters) {
+    // Comma-separated list of User IDs (Engineers)
+    public String assignedEngineerIds; 
+
+    // No-argument constructor for Firestore
+    public Project() {}
+
+    public Project(@NonNull String id, String name, String location, String description, double latitude, double longitude, double radiusMeters, String assignedEngineerIds) {
         this.id = id;
         this.name = name;
         this.location = location;
@@ -27,5 +34,11 @@ public class Project {
         this.latitude = latitude;
         this.longitude = longitude;
         this.radiusMeters = radiusMeters;
+        this.assignedEngineerIds = assignedEngineerIds;
+    }
+    
+    @Ignore
+    public Project(@NonNull String id, String name, String location, String description, double latitude, double longitude, double radiusMeters) {
+        this(id, name, location, description, latitude, longitude, radiusMeters, "");
     }
 }

@@ -8,18 +8,20 @@ import androidx.room.PrimaryKey;
 public class Attendance {
     @PrimaryKey
     @NonNull
-    public String id; // UUID or Firebase ID
+    public String id;
 
     public String userId;
     public String projectId;
     public long clockInTime;
-    public long clockOutTime; // 0 if currently working
-    public String status; // "PRESENT", "ABSENT", "HALF_DAY"
+    public long clockOutTime;
+    public String status;
     public double latitude;
     public double longitude;
     
-    // Sync status
     public boolean isSynced;
+
+    // No-argument constructor for Firestore
+    public Attendance() {}
 
     public Attendance(@NonNull String id, String userId, String projectId, long clockInTime, long clockOutTime, String status, double latitude, double longitude) {
         this.id = id;

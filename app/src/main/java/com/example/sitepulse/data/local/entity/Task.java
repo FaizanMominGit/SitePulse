@@ -19,6 +19,9 @@ public class Task {
     // New field for sync status
     public boolean isSynced;
 
+    // No-argument constructor for Firestore
+    public Task() {}
+
     public Task(@NonNull String id, String projectId, String title, String description, boolean isCompleted, long timestamp) {
         this.id = id;
         this.projectId = projectId;

@@ -11,12 +11,13 @@ room = "2.6.1"
 work = "2.9.0"
 firebaseBom = "34.7.0"
 playServicesLocation = "21.1.0"
-camera = "1.3.1"
+camera = "1.5.2"
 glide = "4.16.0"
 googleServices = "4.4.4"
 credentials = "1.5.0"
 credentialsPlayServicesAuth = "1.5.0"
 googleid = "1.1.1"
+itext = "7.2.5"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -53,6 +54,11 @@ camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "
 # Glide
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
+
+# PDF Generation
+itext-core = { group = "com.itextpdf", name = "itext7-core", version.ref = "itext" }
+
+# Identity
 credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }

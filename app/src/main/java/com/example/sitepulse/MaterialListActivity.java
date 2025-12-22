@@ -32,9 +32,15 @@ public class MaterialListActivity extends AppCompatActivity {
 
         db = AppDatabase.getDatabase(this);
 
-        loadCurrentProjectId();
         initViews();
         setupRecyclerView();
+
+        if (getIntent().hasExtra("PROJECT_ID")) {
+            currentProjectId = getIntent().getStringExtra("PROJECT_ID");
+            loadRequests();
+        } else {
+            loadCurrentProjectId();
+        }
     }
 
     private void loadCurrentProjectId() {

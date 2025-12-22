@@ -2,7 +2,6 @@ package com.example.sitepulse;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,8 +12,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.sitepulse.data.local.AppDatabase;
 import com.example.sitepulse.data.local.entity.DailyReport;
 import com.example.sitepulse.data.local.entity.Project;
+import com.example.sitepulse.data.repository.SyncRepository;
 import com.example.sitepulse.ui.adapter.DprAdapter;
+import com.example.sitepulse.util.NetworkUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
 
@@ -25,6 +27,7 @@ public class DprListActivity extends AppCompatActivity {
     private DprAdapter dprAdapter;
     private AppDatabase db;
     private String currentProjectId;
+    private SyncRepository syncRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,12 +35,31 @@ public class DprListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_dpr_list);
 
         db = AppDatabase.getDatabase(this);
+        syncRepository = new SyncRepository(db, FirebaseFirestore.getInstance());
         
-        // For now, fetch first project ID. In future, pass via Intent.
-        loadCurrentProjectId();
-
         initViews();
         setupRecyclerView();
+        
+        if (getIntent().hasExtra("PROJECT_ID")) {
+            currentProjectId = getIntent().getStringExtra("PROJECT_ID");
+            loadReports();
+        } else {
+            loadCurrentProjectId();
+        }
+
+        if (NetworkUtils.isNetworkAvailable(this)) {
+            syncRepository.syncDprs(new SyncRepository.SyncCallback() {
+                @Override
+                public void onSuccess() {
+                    runOnUiThread(() -> Toast.makeText(DprListActivity.this, "Reports synced", Toast.LENGTH_SHORT).show());
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    runOnUiThread(() -> Toast.makeText(DprListActivity.this, "Sync failed", Toast.LENGTH_SHORT).show());
+                }
+            });
+        }
     }
 
     private void loadCurrentProjectId() {
@@ -73,8 +95,9 @@ public class DprListActivity extends AppCompatActivity {
         rvDprList.setAdapter(dprAdapter);
 
         dprAdapter.setOnDprClickListener(report -> {
-            // Future: Show details
-            Toast.makeText(this, "Clicked Report from: " + report.date, Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(DprListActivity.this, DprDetailActivity.class);
+            intent.putExtra("REPORT_ID", report.id);
+            startActivity(intent);
         });
     }
 

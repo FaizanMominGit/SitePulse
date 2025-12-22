@@ -6,4 +6,8 @@
     </style>
 
     <style name="Theme.SitePulse" parent="Base.Theme.SitePulse" />
+
+    <style name="Theme.SitePulse.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.SitePulse.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
 </resources>

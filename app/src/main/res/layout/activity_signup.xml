@@ -54,10 +54,45 @@
         android:hint="Password"
         android:inputType="textPassword"
         android:minHeight="48dp"
-        app:layout_constraintBottom_toTopOf="@+id/btnSignup"
+        app:layout_constraintBottom_toTopOf="@+id/tvRoleLabel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/etEmailSignup" />
+
+    <TextView
+        android:id="@+id/tvRoleLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Role:"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etPasswordSignup"
+        app:layout_constraintBottom_toTopOf="@+id/rgRole"/>
+
+    <RadioGroup
+        android:id="@+id/rgRole"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/tvRoleLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/btnSignup">
+
+        <RadioButton
+            android:id="@+id/rbEngineer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Engineer"
+            android:checked="true"
+            android:layout_marginEnd="16dp"/>
+
+        <RadioButton
+            android:id="@+id/rbManager"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Manager" />
+    </RadioGroup>
 
     <Button
         android:id="@+id/btnSignup"
@@ -68,7 +103,7 @@
         app:layout_constraintBottom_toTopOf="@+id/tvLoginRedirect"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/etPasswordSignup" />
+        app:layout_constraintTop_toBottomOf="@+id/rgRole" />
 
     <TextView
         android:id="@+id/tvLoginRedirect"

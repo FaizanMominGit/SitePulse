@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'com.example.sitepulse'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.example.sitepulse"
         minSdk 24
-        targetSdk 34
+        targetSdk 36
         versionCode 1
         versionName "1.0"
 
@@ -24,8 +24,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 }
 
@@ -61,6 +61,14 @@ dependencies {
     // Glide
     implementation libs.glide
     annotationProcessor libs.glide.compiler
+
+    // PDF Generation
+    implementation libs.itext.core
+
+    // Identity
+    implementation libs.credentials
+    implementation libs.credentials.play.services.auth
+    implementation libs.googleid
 
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit

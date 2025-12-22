@@ -46,7 +46,6 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
         android:backgroundTint="#FF5252"
-        android:minHeight="40dp"
         android:text="Logout"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@+id/tvDate"
@@ -78,22 +77,19 @@
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/tvProjectName"
-                android:layout_width="wrap_content"
+            <Spinner
+                android:id="@+id/spinnerProjects"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="City Center Mall Construction"
-                android:textColor="@android:color/black"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:minHeight="48dp" />
 
             <TextView
                 android:id="@+id/tvLocation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Downtown, Sector 4"
+                android:text="Select a project"
                 android:textSize="14sp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -115,44 +111,43 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginEnd="4dp"
+            android:backgroundTint="#2196F3"
+            android:ellipsize="end"
+            android:maxLines="2"
             android:text="Attendance"
             android:textSize="10sp"
-            android:backgroundTint="#2196F3"
             app:icon="@android:drawable/ic_menu_my_calendar"
-            app:iconSize="16dp"
-            android:maxLines="1"
-            android:ellipsize="end" />
+            app:iconSize="16dp" />
 
         <!-- Daily Reports Button -->
         <Button
             android:id="@+id/btnOpenDpr"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginHorizontal="4dp"
+            android:layout_weight="1"
+            android:backgroundTint="#FF9800"
+            android:ellipsize="end"
+            android:maxLines="2"
             android:text="Daily Reports"
             android:textSize="10sp"
-            android:backgroundTint="#FF9800"
             app:icon="@android:drawable/ic_menu_agenda"
-            app:iconSize="16dp"
-            android:maxLines="1"
-            android:ellipsize="end" />
-            
+            app:iconSize="16dp" />
+
         <!-- Material Button -->
         <Button
             android:id="@+id/btnOpenMaterials"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:backgroundTint="#9C27B0"
+            android:ellipsize="end"
+            android:maxLines="2"
             android:text="Materials"
             android:textSize="10sp"
-            android:backgroundTint="#9C27B0"
             app:icon="@android:drawable/ic_menu_manage"
-            app:iconSize="16dp"
-            android:maxLines="1"
-            android:ellipsize="end" />
+            app:iconSize="16dp" />
 
     </LinearLayout>
 
@@ -191,5 +186,16 @@
         android:src="@android:drawable/ic_input_add"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/pbProjectSync"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvTasksTitle" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

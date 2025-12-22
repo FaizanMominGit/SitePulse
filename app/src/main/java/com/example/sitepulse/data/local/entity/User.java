@@ -8,11 +8,15 @@ import androidx.room.PrimaryKey;
 public class User {
     @PrimaryKey
     @NonNull
-    public String id; // Firebase UID
+    public String id = ""; // Initialized to prevent null issues with @NonNull
 
     public String name;
     public String email;
     public String role; // e.g., "Engineer", "Manager"
+
+    // No-argument constructor required for Firestore deserialization
+    public User() {
+    }
 
     public User(@NonNull String id, String name, String email, String role) {
         this.id = id;

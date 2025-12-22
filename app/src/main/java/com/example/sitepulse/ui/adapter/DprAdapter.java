@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.example.sitepulse.R;
 import com.example.sitepulse.data.local.entity.DailyReport;
 
@@ -78,10 +79,24 @@ public class DprAdapter extends RecyclerView.Adapter<DprAdapter.DprViewHolder> {
             tvReportDate.setText(sdf.format(new Date(report.date)));
             tvReportLaborCount.setText("Labor: " + report.laborCount);
 
-            if (report.imagePath != null && !report.imagePath.isEmpty()) {
-                ivReportImage.setImageURI(Uri.fromFile(new File(report.imagePath)));
+            // Use Glide to handle image loading from URL or local path
+            if (report.imageUrl != null && !report.imageUrl.isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(report.imageUrl)
+                        .placeholder(R.drawable.ic_launcher_background)
+                        .error(R.drawable.ic_launcher_background)
+                        .into(ivReportImage);
+            } else if (report.imagePath != null && !report.imagePath.isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(Uri.fromFile(new File(report.imagePath)))
+                        .placeholder(R.drawable.ic_launcher_background)
+                        .error(R.drawable.ic_launcher_background)
+                        .into(ivReportImage);
+            } else {
+                // Set a default image if neither path nor URL is available
+                ivReportImage.setImageResource(R.drawable.ic_launcher_background);
             }
-            
+
             ivSyncStatus.setVisibility(report.isSynced ? View.GONE : View.VISIBLE);
         }
     }

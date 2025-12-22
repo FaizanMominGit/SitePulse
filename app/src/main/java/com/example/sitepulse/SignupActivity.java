@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +24,8 @@ import java.util.Map;
 public class SignupActivity extends AppCompatActivity {
 
     private EditText etName, etEmail, etPassword;
+    private RadioGroup rgRole;
+    private RadioButton rbEngineer, rbManager;
     private Button btnSignup;
     private TextView tvLoginRedirect;
     private FirebaseAuth mAuth;
@@ -40,6 +44,9 @@ public class SignupActivity extends AppCompatActivity {
         etName = findViewById(R.id.etName);
         etEmail = findViewById(R.id.etEmailSignup);
         etPassword = findViewById(R.id.etPasswordSignup);
+        rgRole = findViewById(R.id.rgRole);
+        rbEngineer = findViewById(R.id.rbEngineer);
+        rbManager = findViewById(R.id.rbManager);
         btnSignup = findViewById(R.id.btnSignup);
         tvLoginRedirect = findViewById(R.id.tvLoginRedirect);
 
@@ -52,6 +59,12 @@ public class SignupActivity extends AppCompatActivity {
         String name = etName.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
+        
+        int selectedRoleId = rgRole.getCheckedRadioButtonId();
+        String role = "Engineer";
+        if (selectedRoleId == R.id.rbManager) {
+            role = "Manager";
+        }
 
         if (TextUtils.isEmpty(name)) {
             etName.setError("Name is required");
@@ -73,6 +86,7 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
+        String finalRole = role;
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
@@ -83,7 +97,7 @@ public class SignupActivity extends AppCompatActivity {
                                     .addOnCompleteListener(emailTask -> {
                                         if (emailTask.isSuccessful()) {
                                             // Proceed to save data
-                                            saveUserToFirestoreAndLocal(firebaseUser.getUid(), name, email);
+                                            saveUserToFirestoreAndLocal(firebaseUser.getUid(), name, email, finalRole);
                                         } else {
                                             Toast.makeText(SignupActivity.this, 
                                                 "Failed to send verification email: " + emailTask.getException().getMessage(), 
@@ -98,13 +112,13 @@ public class SignupActivity extends AppCompatActivity {
                 });
     }
 
-    private void saveUserToFirestoreAndLocal(String uid, String name, String email) {
+    private void saveUserToFirestoreAndLocal(String uid, String name, String email, String role) {
         // 1. Prepare data for Firestore
         Map<String, Object> userMap = new HashMap<>();
         userMap.put("id", uid);
         userMap.put("name", name);
         userMap.put("email", email);
-        userMap.put("role", "Engineer"); // Default role
+        userMap.put("role", role);
 
         // 2. Save to Firestore
         db.collection("users").document(uid)
@@ -112,7 +126,7 @@ public class SignupActivity extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> {
                     // 3. Save to Local Database (Room) on background thread
                     AppDatabase.databaseWriteExecutor.execute(() -> {
-                        User localUser = new User(uid, name, email, "Engineer");
+                        User localUser = new User(uid, name, email, role);
                         localDb.userDao().insert(localUser);
 
                         // 4. Sign out and redirect to Login

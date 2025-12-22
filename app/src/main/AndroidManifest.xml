@@ -80,6 +80,11 @@
             android:name=".CreateDprActivity"
             android:exported="false" />
 
+        <!-- DPR Detail Activity -->
+        <activity
+            android:name=".DprDetailActivity"
+            android:exported="false" />
+            
         <!-- Material List Activity -->
         <activity
             android:name=".MaterialListActivity"
@@ -88,6 +93,35 @@
         <!-- Create Material Activity -->
         <activity
             android:name=".CreateMaterialActivity"
+            android:exported="false" />
+            
+        <!-- Manager Activities -->
+        <activity
+            android:name=".ManagerDashboardActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ManagerProjectListActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ManagerDprListActivity"
+            android:exported="false" />
+            
+        <activity
+            android:name=".CreateProjectActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ManagerMaterialListActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ProjectDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".CreateTaskActivity"
             android:exported="false" />
 
     </application>

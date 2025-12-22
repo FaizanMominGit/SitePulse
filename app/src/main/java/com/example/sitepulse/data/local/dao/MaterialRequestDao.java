@@ -15,12 +15,18 @@ import java.util.List;
 public interface MaterialRequestDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(MaterialRequest request);
+    
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertAll(List<MaterialRequest> requests);
 
     @Update
     void update(MaterialRequest request);
 
     @Query("SELECT * FROM material_requests WHERE projectId = :projectId ORDER BY date DESC")
     LiveData<List<MaterialRequest>> getRequestsForProject(String projectId);
+    
+    @Query("SELECT * FROM material_requests ORDER BY date DESC")
+    LiveData<List<MaterialRequest>> getAllRequests();
 
     @Query("SELECT * FROM material_requests WHERE isSynced = 0")
     List<MaterialRequest> getUnsyncedRequests();
