@@ -30,6 +30,10 @@ public interface DailyReportDao {
 
     @Query("SELECT * FROM daily_reports WHERE id = :reportId LIMIT 1")
     LiveData<DailyReport> getReportById(String reportId);
+    
+    // For Dashboard - Get labor trend for last 7 entries
+    @Query("SELECT * FROM daily_reports WHERE projectId = :projectId ORDER BY date ASC LIMIT 7")
+    List<DailyReport> getLast7Reports(String projectId);
 
     @Query("SELECT * FROM daily_reports WHERE isSynced = 0")
     List<DailyReport> getUnsyncedReports();

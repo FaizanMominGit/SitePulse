@@ -24,8 +24,8 @@ import com.example.sitepulse.data.local.entity.User;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-// Updated version to 8 after adding Invoice entity
-@Database(entities = {Project.class, Task.class, User.class, Attendance.class, DailyReport.class, MaterialRequest.class, Invoice.class}, version = 8, exportSchema = false)
+// Updated version to 9 after modifying MaterialRequest entity (added estimatedCost)
+@Database(entities = {Project.class, Task.class, User.class, Attendance.class, DailyReport.class, MaterialRequest.class, Invoice.class}, version = 9, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ProjectDao projectDao();

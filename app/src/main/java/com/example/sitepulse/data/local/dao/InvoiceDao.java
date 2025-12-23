@@ -24,9 +24,16 @@ public interface InvoiceDao {
 
     @Query("SELECT * FROM invoices WHERE projectId = :projectId ORDER BY date DESC")
     LiveData<List<Invoice>> getInvoicesForProject(String projectId);
+
+    @Query("SELECT * FROM invoices WHERE id = :id")
+    LiveData<Invoice> getInvoiceById(String id);
     
     @Query("SELECT * FROM invoices ORDER BY date DESC")
     LiveData<List<Invoice>> getAllInvoices();
+    
+    // For Dashboard - Total Invoiced Amount
+    @Query("SELECT SUM(totalAmount) FROM invoices WHERE projectId = :projectId")
+    Double getTotalInvoicedAmount(String projectId);
 
     @Query("SELECT * FROM invoices WHERE isSynced = 0")
     List<Invoice> getUnsyncedInvoices();

@@ -132,6 +132,10 @@
             android:name=".CreateInvoiceActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".InvoiceDetailActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

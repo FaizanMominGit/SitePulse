@@ -28,6 +28,10 @@ public interface MaterialRequestDao {
     @Query("SELECT * FROM material_requests ORDER BY date DESC")
     LiveData<List<MaterialRequest>> getAllRequests();
 
+    // For Dashboard - Estimated Material Cost
+    @Query("SELECT SUM(estimatedCost) FROM material_requests WHERE projectId = :projectId")
+    Double getTotalEstimatedCost(String projectId);
+
     @Query("SELECT * FROM material_requests WHERE isSynced = 0")
     List<MaterialRequest> getUnsyncedRequests();
 

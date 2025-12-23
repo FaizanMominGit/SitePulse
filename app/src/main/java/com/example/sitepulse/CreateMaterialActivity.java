@@ -22,7 +22,7 @@ import java.util.UUID;
 
 public class CreateMaterialActivity extends AppCompatActivity {
 
-    private TextInputEditText etItemName, etQuantity, etUnit;
+    private TextInputEditText etItemName, etQuantity, etUnit, etEstimatedCost;
     private RadioGroup rgUrgency;
     private Button btnSubmitRequest;
 
@@ -55,6 +55,7 @@ public class CreateMaterialActivity extends AppCompatActivity {
         etItemName = findViewById(R.id.etItemName);
         etQuantity = findViewById(R.id.etQuantity);
         etUnit = findViewById(R.id.etUnit);
+        etEstimatedCost = findViewById(R.id.etEstimatedCost);
         rgUrgency = findViewById(R.id.rgUrgency);
         btnSubmitRequest = findViewById(R.id.btnSubmitRequest);
 
@@ -65,6 +66,7 @@ public class CreateMaterialActivity extends AppCompatActivity {
         String itemName = etItemName.getText().toString().trim();
         String quantityStr = etQuantity.getText().toString().trim();
         String unit = etUnit.getText().toString().trim();
+        String costStr = etEstimatedCost.getText().toString().trim();
 
         if (TextUtils.isEmpty(itemName)) {
             etItemName.setError("Required");
@@ -80,6 +82,14 @@ public class CreateMaterialActivity extends AppCompatActivity {
         }
 
         double quantity = Double.parseDouble(quantityStr);
+        double estimatedCost = 0.0;
+        if (!TextUtils.isEmpty(costStr)) {
+            try {
+                estimatedCost = Double.parseDouble(costStr);
+            } catch (NumberFormatException e) {
+                // Ignore invalid cost
+            }
+        }
         
         String urgency = "Medium";
         int selectedId = rgUrgency.getCheckedRadioButtonId();
@@ -98,6 +108,7 @@ public class CreateMaterialActivity extends AppCompatActivity {
                 unit,
                 urgency,
                 "PENDING",
+                estimatedCost,
                 timestamp
         );
 

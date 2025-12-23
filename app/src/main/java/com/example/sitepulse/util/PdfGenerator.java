@@ -13,6 +13,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.example.sitepulse.data.local.entity.DailyReport;
+import com.example.sitepulse.data.local.entity.Invoice;
 import com.example.sitepulse.data.local.entity.Project;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -29,6 +30,7 @@ import com.itextpdf.layout.properties.UnitValue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -120,6 +122,79 @@ public class PdfGenerator {
                         handler.post(listener::onComplete);
                     }
                 });
+
+            } catch (Exception e) {
+                handler.post(() -> listener.onError(e));
+            }
+        });
+    }
+
+    public static void generateInvoicePdf(Context context, Invoice invoice, OutputStream outputStream, PdfGenerationListener listener) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        executor.execute(() -> {
+            try {
+                PdfWriter writer = new PdfWriter(outputStream);
+                PdfDocument pdfDoc = new PdfDocument(writer);
+                Document document = new Document(pdfDoc, PageSize.A4);
+                document.setMargins(36, 36, 36, 36);
+
+                // Title
+                document.add(new Paragraph("INVOICE")
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setBold()
+                        .setFontSize(24));
+
+                document.add(new Paragraph("\n"));
+
+                // Invoice Header Info
+                Table headerTable = new Table(UnitValue.createPercentArray(new float[]{1, 1})).useAllAvailableWidth();
+                headerTable.addCell(createCell("Invoice Number: " + invoice.invoiceNumber, true));
+                headerTable.addCell(createCell("Date: " + new SimpleDateFormat("MMM d, yyyy", Locale.US).format(new Date(invoice.date)), true).setTextAlignment(TextAlignment.RIGHT));
+                document.add(headerTable);
+
+                document.add(new Paragraph("\n"));
+                
+                // Client Info
+                document.add(new Paragraph("Bill To:").setBold());
+                document.add(new Paragraph(invoice.clientName).setFontSize(14));
+                
+                document.add(new Paragraph("\n"));
+
+                // Items Table (Currently just one item based on description)
+                float[] columnWidths = {4, 1, 1}; // Description, Amount
+                Table itemTable = new Table(UnitValue.createPercentArray(columnWidths)).useAllAvailableWidth();
+                
+                // Headers
+                itemTable.addCell(createCell("Description", true));
+                itemTable.addCell(createCell("Amount", true).setTextAlignment(TextAlignment.RIGHT));
+                
+                // Row
+                NumberFormat format = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
+                itemTable.addCell(createCell(invoice.description, false));
+                itemTable.addCell(createCell(format.format(invoice.subtotal), false).setTextAlignment(TextAlignment.RIGHT));
+                
+                document.add(itemTable);
+                
+                document.add(new Paragraph("\n"));
+
+                // Totals Table
+                Table totalsTable = new Table(UnitValue.createPercentArray(new float[]{3, 1})).useAllAvailableWidth();
+                
+                totalsTable.addCell(createCell("Subtotal:", true).setTextAlignment(TextAlignment.RIGHT));
+                totalsTable.addCell(createCell(format.format(invoice.subtotal), false).setTextAlignment(TextAlignment.RIGHT));
+                
+                totalsTable.addCell(createCell("GST (" + invoice.gstRate + "%):", true).setTextAlignment(TextAlignment.RIGHT));
+                totalsTable.addCell(createCell(format.format(invoice.gstAmount), false).setTextAlignment(TextAlignment.RIGHT));
+                
+                totalsTable.addCell(createCell("Total Amount:", true).setTextAlignment(TextAlignment.RIGHT).setFontSize(14));
+                totalsTable.addCell(createCell(format.format(invoice.totalAmount), true).setTextAlignment(TextAlignment.RIGHT).setFontSize(14));
+
+                document.add(totalsTable);
+
+                document.close();
+                handler.post(listener::onComplete);
 
             } catch (Exception e) {
                 handler.post(() -> listener.onError(e));

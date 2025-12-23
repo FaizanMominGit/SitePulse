@@ -23,6 +23,11 @@ public interface TaskDao {
     @Query("SELECT * FROM tasks")
     LiveData<List<Task>> getAllTasks();
 
+    // For Dashboard - Task Progress
+    // Since 'status' column doesn't exist, we use 'isCompleted'
+    @Query("SELECT isCompleted FROM tasks WHERE projectId = :projectId")
+    List<Boolean> getTaskCompletionStatus(String projectId);
+
     @Query("SELECT * FROM tasks WHERE isSynced = 0")
     List<Task> getUnsyncedTasks(); // Not LiveData, for Worker
 

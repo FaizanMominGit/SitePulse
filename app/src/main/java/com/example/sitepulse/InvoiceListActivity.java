@@ -95,8 +95,9 @@ public class InvoiceListActivity extends AppCompatActivity {
         rvInvoices.setAdapter(adapter);
 
         adapter.setOnInvoiceClickListener(invoice -> {
-            // Future: Show detailed invoice view
-            Toast.makeText(this, "Clicked Invoice #" + invoice.invoiceNumber, Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(InvoiceListActivity.this, InvoiceDetailActivity.class);
+            intent.putExtra("INVOICE_ID", invoice.id);
+            startActivity(intent);
         });
     }
 
