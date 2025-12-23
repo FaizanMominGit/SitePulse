@@ -5,6 +5,7 @@ import android.util.Log;
 import com.example.sitepulse.data.local.AppDatabase;
 import com.example.sitepulse.data.local.entity.Attendance;
 import com.example.sitepulse.data.local.entity.DailyReport;
+import com.example.sitepulse.data.local.entity.Invoice;
 import com.example.sitepulse.data.local.entity.MaterialRequest;
 import com.example.sitepulse.data.local.entity.Project;
 import com.example.sitepulse.data.local.entity.User;
@@ -45,6 +46,7 @@ public class SyncRepository {
                 }
                 syncMaterialRequestsInternal();
                 syncTasksInternal();
+                syncInvoicesInternal();
                 callback.onSuccess();
             } catch (Exception e) {
                 Log.e(TAG, "Sync failed", e);
@@ -120,6 +122,17 @@ public class SyncRepository {
             }
         }).start();
     }
+
+    public void syncInvoices(SyncCallback callback) {
+        new Thread(() -> {
+            try {
+                syncInvoicesInternal();
+                callback.onSuccess();
+            } catch (Exception e) {
+                callback.onFailure(e);
+            }
+        }).start();
+    }
     
     public void updateRequestStatus(MaterialRequest request, String newStatus, SyncCallback callback) {
         remoteDb.collection("material_requests").document(request.id)
@@ -179,6 +192,12 @@ public class SyncRepository {
         List<com.example.sitepulse.data.local.entity.Task> tasks = fetchTasks();
         localDb.taskDao().insertAll(tasks);
         Log.d(TAG, "Synced " + tasks.size() + " tasks.");
+    }
+
+    private void syncInvoicesInternal() throws ExecutionException, InterruptedException {
+        List<Invoice> invoices = fetchInvoices();
+        localDb.invoiceDao().insertAll(invoices);
+        Log.d(TAG, "Synced " + invoices.size() + " invoices.");
     }
 
     public void startRealtimeSync() {
@@ -249,6 +268,24 @@ public class SyncRepository {
             }
         });
         listeners.add(taskListener);
+
+        ListenerRegistration invoiceListener = remoteDb.collection("invoices").addSnapshotListener((snapshots, e) -> {
+            if (e != null) {
+                Log.w(TAG, "Invoice listen failed.", e);
+                return;
+            }
+            if (snapshots != null) {
+                List<Invoice> invoices = new ArrayList<>();
+                for (QueryDocumentSnapshot doc : snapshots) {
+                    Invoice i = doc.toObject(Invoice.class);
+                    i.isSynced = true;
+                    invoices.add(i);
+                }
+                AppDatabase.databaseWriteExecutor.execute(() -> localDb.invoiceDao().insertAll(invoices));
+                Log.d(TAG, "Real-time: Synced " + invoices.size() + " invoices.");
+            }
+        });
+        listeners.add(invoiceListener);
     }
 
     public void stopRealtimeSync() {
@@ -340,6 +377,21 @@ public class SyncRepository {
                     com.example.sitepulse.data.local.entity.Task taskItem = doc.toObject(com.example.sitepulse.data.local.entity.Task.class);
                     taskItem.isSynced = true;
                     list.add(taskItem);
+                }
+            }
+            return list;
+        });
+        return Tasks.await(task);
+    }
+
+    private List<Invoice> fetchInvoices() throws ExecutionException, InterruptedException {
+        Task<List<Invoice>> task = remoteDb.collection("invoices").get().continueWith(t -> {
+            List<Invoice> list = new ArrayList<>();
+            if (t.isSuccessful()) {
+                for (QueryDocumentSnapshot doc : t.getResult()) {
+                    Invoice i = doc.toObject(Invoice.class);
+                    i.isSynced = true;
+                    list.add(i);
                 }
             }
             return list;

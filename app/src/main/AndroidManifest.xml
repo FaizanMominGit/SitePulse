@@ -124,6 +124,14 @@
             android:name=".CreateTaskActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".InvoiceListActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".CreateInvoiceActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

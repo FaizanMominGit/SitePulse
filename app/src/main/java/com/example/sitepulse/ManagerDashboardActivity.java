@@ -11,7 +11,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class ManagerDashboardActivity extends AppCompatActivity {
 
-    private Button btnManageProjects, btnViewReports, btnMaterialRequests, btnLogout;
+    private Button btnManageProjects, btnViewReports, btnMaterialRequests, btnInvoices, btnLogout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +21,7 @@ public class ManagerDashboardActivity extends AppCompatActivity {
         btnManageProjects = findViewById(R.id.btnManageProjects);
         btnViewReports = findViewById(R.id.btnViewReports);
         btnMaterialRequests = findViewById(R.id.btnMaterialRequests);
+        btnInvoices = findViewById(R.id.btnInvoices);
         btnLogout = findViewById(R.id.btnLogout);
 
         btnManageProjects.setOnClickListener(v -> {
@@ -33,6 +34,10 @@ public class ManagerDashboardActivity extends AppCompatActivity {
 
         btnMaterialRequests.setOnClickListener(v -> {
             startActivity(new Intent(ManagerDashboardActivity.this, ManagerMaterialListActivity.class));
+        });
+
+        btnInvoices.setOnClickListener(v -> {
+            startActivity(new Intent(ManagerDashboardActivity.this, InvoiceListActivity.class));
         });
 
         btnLogout.setOnClickListener(v -> {

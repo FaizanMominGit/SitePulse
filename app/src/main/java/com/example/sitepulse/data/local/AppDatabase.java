@@ -8,12 +8,14 @@ import androidx.room.RoomDatabase;
 
 import com.example.sitepulse.data.local.dao.AttendanceDao;
 import com.example.sitepulse.data.local.dao.DailyReportDao;
+import com.example.sitepulse.data.local.dao.InvoiceDao;
 import com.example.sitepulse.data.local.dao.MaterialRequestDao;
 import com.example.sitepulse.data.local.dao.ProjectDao;
 import com.example.sitepulse.data.local.dao.TaskDao;
 import com.example.sitepulse.data.local.dao.UserDao;
 import com.example.sitepulse.data.local.entity.Attendance;
 import com.example.sitepulse.data.local.entity.DailyReport;
+import com.example.sitepulse.data.local.entity.Invoice;
 import com.example.sitepulse.data.local.entity.MaterialRequest;
 import com.example.sitepulse.data.local.entity.Project;
 import com.example.sitepulse.data.local.entity.Task;
@@ -22,8 +24,8 @@ import com.example.sitepulse.data.local.entity.User;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-// Updated version to 7 after adding MaterialRequest entity
-@Database(entities = {Project.class, Task.class, User.class, Attendance.class, DailyReport.class, MaterialRequest.class}, version = 7, exportSchema = false)
+// Updated version to 8 after adding Invoice entity
+@Database(entities = {Project.class, Task.class, User.class, Attendance.class, DailyReport.class, MaterialRequest.class, Invoice.class}, version = 8, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ProjectDao projectDao();
@@ -32,6 +34,7 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract AttendanceDao attendanceDao();
     public abstract DailyReportDao dailyReportDao();
     public abstract MaterialRequestDao materialRequestDao();
+    public abstract InvoiceDao invoiceDao();
 
     private static volatile AppDatabase INSTANCE;
     private static final int NUMBER_OF_THREADS = 4;

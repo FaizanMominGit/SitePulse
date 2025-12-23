@@ -37,6 +37,7 @@ dependencies {
     
     // Room
     implementation libs.room.runtime
+    implementation libs.firebase.messaging
     annotationProcessor libs.room.compiler
 
     // Firebase

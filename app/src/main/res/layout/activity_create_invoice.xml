@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".CreateInvoiceActivity">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create New Invoice"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilInvoiceNumber"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Invoice Number (e.g., INV-001)"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@+id/tvTitle">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etInvoiceNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapCharacters" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilClientName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Client Name"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/tilInvoiceNumber">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etClientName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Description / Items"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/tilClientName">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine"
+            android:minLines="2" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilSubtotal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Subtotal Amount (₹)"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/tilDescription">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etSubtotal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilGstRate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="GST Rate (%)"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/tilSubtotal">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etGstRate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:text="18.0" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+    
+    <TextView
+        android:id="@+id/tvTotalLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Total Amount:"
+        android:textSize="18sp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tilGstRate" />
+
+    <TextView
+        android:id="@+id/tvTotalAmount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="₹0.00"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/tvTotalLabel"
+        app:layout_constraintStart_toEndOf="@+id/tvTotalLabel" />
+
+    <Button
+        android:id="@+id/btnSaveInvoice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Create Invoice"
+        android:layout_marginTop="32dp"
+        app:layout_constraintTop_toBottomOf="@+id/tvTotalLabel" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
