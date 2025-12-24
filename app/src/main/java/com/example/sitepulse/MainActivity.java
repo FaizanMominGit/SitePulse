@@ -1,17 +1,24 @@
 package com.example.sitepulse;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.Manifest;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.work.Constraints;
@@ -27,11 +34,13 @@ import com.example.sitepulse.data.local.entity.User;
 import com.example.sitepulse.data.repository.SyncRepository;
 import com.example.sitepulse.ui.adapter.TaskAdapter;
 import com.example.sitepulse.util.NetworkUtils;
+import com.example.sitepulse.util.NotificationHelper;
 import com.example.sitepulse.worker.SyncWorker;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -46,7 +55,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvWelcome, tvDate, tvLocation;
     private Spinner spinnerProjects;
     private RecyclerView rvTasks;
-    private Button btnLogout, btnOpenAttendance, btnOpenDpr, btnOpenMaterials;
+    private Button btnOpenAttendance, btnOpenDpr, btnOpenMaterials, btnOpenInvoices;
+    private ImageButton btnProfile;
     private FloatingActionButton fabAddTask;
     private ProgressBar pbProjectSync;
 
@@ -66,9 +76,18 @@ public class MainActivity extends AppCompatActivity {
         db = AppDatabase.getDatabase(this);
         syncRepository = new SyncRepository(db, FirebaseFirestore.getInstance());
 
+        // Initialize Notification Channels
+        NotificationHelper.createNotificationChannels(this);
+
+        // Request Notification Permission
+        askNotificationPermission();
+
         initViews();
         setupRecyclerView();
         loadUserData();
+
+        // Get and Update FCM Token
+        fetchAndSaveFcmToken();
 
         if (NetworkUtils.isNetworkAvailable(this)) {
             pbProjectSync.setVisibility(View.VISIBLE);
@@ -95,10 +114,8 @@ public class MainActivity extends AppCompatActivity {
 
         schedulePeriodicSync();
 
-        btnLogout.setOnClickListener(v -> {
-            mAuth.signOut();
-            startActivity(new Intent(MainActivity.this, LoginActivity.class));
-            finish();
+        btnProfile.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, ProfileActivity.class));
         });
 
         fabAddTask.setOnClickListener(v -> {
@@ -128,6 +145,65 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        btnOpenInvoices.setOnClickListener(v -> {
+            if (currentProject != null) {
+                Intent intent = new Intent(MainActivity.this, InvoiceListActivity.class);
+                intent.putExtra("PROJECT_ID", currentProject.id);
+                startActivity(intent);
+            }
+        });
+    }
+
+    private void askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                // FCM SDK (and your app) can post notifications.
+            } else if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                 requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+    }
+
+    private final androidx.activity.result.ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    Log.d("FCM_DEBUG", "Notification permission granted");
+                } else {
+                    Toast.makeText(this, "Notifications disabled", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+    private void fetchAndSaveFcmToken() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.w("FCM_DEBUG", "Fetching FCM registration token failed", task.getException());
+                        return;
+                    }
+
+                    // Get new FCM registration token
+                    String token = task.getResult();
+                    
+                    // LOG THE TOKEN HERE
+                    Log.d("FCM_DEBUG", "Token: " + token);
+                    // You can also print it to console with System.out if Logcat is tricky
+                    System.out.println("FCM_TOKEN_PRINT: " + token);
+
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    if (user != null && token != null) {
+                        AppDatabase.databaseWriteExecutor.execute(() -> {
+                            db.userDao().updateFcmToken(user.getUid(), token);
+                        });
+                        
+                        FirebaseFirestore.getInstance().collection("users")
+                                .document(user.getUid())
+                                .update("fcmToken", token);
+                    }
+                });
     }
 
     private void initViews() {
@@ -136,11 +212,12 @@ public class MainActivity extends AppCompatActivity {
         spinnerProjects = findViewById(R.id.spinnerProjects);
         tvLocation = findViewById(R.id.tvLocation);
         rvTasks = findViewById(R.id.rvTasks);
-        btnLogout = findViewById(R.id.btnLogout);
+        btnProfile = findViewById(R.id.btnProfile);
         fabAddTask = findViewById(R.id.fabAddTask);
         btnOpenAttendance = findViewById(R.id.btnOpenAttendance);
         btnOpenDpr = findViewById(R.id.btnOpenDpr);
         btnOpenMaterials = findViewById(R.id.btnOpenMaterials);
+        btnOpenInvoices = findViewById(R.id.btnOpenInvoices);
         pbProjectSync = findViewById(R.id.pbProjectSync);
 
         String currentDate = new SimpleDateFormat("EEEE, MMM d", Locale.getDefault()).format(new Date());

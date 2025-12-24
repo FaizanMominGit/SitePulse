@@ -75,6 +75,11 @@ public class ManagerProjectListActivity extends AppCompatActivity {
             }
 
             @Override
+            public void onArchiveClick(Project project) {
+                archiveProject(project);
+            }
+
+            @Override
             public void onItemClick(Project project) {
                 Intent intent = new Intent(ManagerProjectListActivity.this, ProjectDetailActivity.class);
                 intent.putExtra("PROJECT_ID", project.id);
@@ -96,6 +101,23 @@ public class ManagerProjectListActivity extends AppCompatActivity {
         AppDatabase.databaseWriteExecutor.execute(() -> {
             db.projectDao().delete(project);
             runOnUiThread(() -> Toast.makeText(this, "Project deleted", Toast.LENGTH_SHORT).show());
+        });
+    }
+
+    private void archiveProject(Project project) {
+        project.isArchived = true;
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            // Update local
+            db.projectDao().update(project);
+            
+            // Sync to Remote
+            FirebaseFirestore.getInstance().collection("projects")
+                    .document(project.id)
+                    .update("isArchived", true)
+                    .addOnSuccessListener(aVoid -> runOnUiThread(() -> 
+                        Toast.makeText(ManagerProjectListActivity.this, "Project archived", Toast.LENGTH_SHORT).show()))
+                    .addOnFailureListener(e -> runOnUiThread(() -> 
+                        Toast.makeText(ManagerProjectListActivity.this, "Failed to sync archive status", Toast.LENGTH_SHORT).show()));
         });
     }
 }

@@ -40,14 +40,15 @@
         app:layout_constraintStart_toStartOf="@+id/tvWelcome"
         app:layout_constraintTop_toBottomOf="@+id/tvWelcome" />
 
-    <Button
-        android:id="@+id/btnLogout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <ImageButton
+        android:id="@+id/btnProfile"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_marginEnd="24dp"
-        android:backgroundTint="#FF5252"
-        android:text="Logout"
-        android:textSize="12sp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@mipmap/ic_launcher_round"
+        android:scaleType="centerInside"
+        android:contentDescription="Profile"
         app:layout_constraintBottom_toBottomOf="@+id/tvDate"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/tvWelcome" />

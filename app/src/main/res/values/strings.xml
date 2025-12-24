@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SitePulse</string>
+    <string name="default_notification_channel_id">general_channel</string>
+    <string name="fcm_message">New Notification</string>
 </resources>

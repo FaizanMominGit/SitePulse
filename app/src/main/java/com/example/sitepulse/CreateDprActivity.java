@@ -25,6 +25,7 @@ import androidx.work.WorkManager;
 
 import com.example.sitepulse.data.local.AppDatabase;
 import com.example.sitepulse.data.local.entity.DailyReport;
+import com.example.sitepulse.util.ImageUtils;
 import com.example.sitepulse.worker.SyncWorker;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
@@ -163,22 +164,41 @@ public class CreateDprActivity extends AppCompatActivity {
             return;
         }
 
+        // Show progress (optional but good UI practice)
+        btnSaveReport.setEnabled(false);
+        btnSaveReport.setText("Saving...");
+
         int laborCount = Integer.parseInt(laborCountStr);
         long timestamp = System.currentTimeMillis();
         String reportId = UUID.randomUUID().toString();
 
-        DailyReport report = new DailyReport(
-                reportId,
-                projectId,
-                currentUserId,
-                timestamp,
-                laborCount,
-                workDesc,
-                hindrances,
-                currentImagePath
-        );
-
         AppDatabase.databaseWriteExecutor.execute(() -> {
+            String finalImagePath = currentImagePath;
+            
+            // Compress Image if exists
+            if (currentImagePath != null) {
+                try {
+                    Uri originalUri = Uri.fromFile(new File(currentImagePath));
+                    Uri compressedUri = ImageUtils.compressImage(CreateDprActivity.this, originalUri);
+                    if (compressedUri != null) {
+                        finalImagePath = compressedUri.getPath();
+                    }
+                } catch (Exception e) {
+                    Log.e("CreateDpr", "Compression failed, using original", e);
+                }
+            }
+
+            DailyReport report = new DailyReport(
+                    reportId,
+                    projectId,
+                    currentUserId,
+                    timestamp,
+                    laborCount,
+                    workDesc,
+                    hindrances,
+                    finalImagePath
+            );
+
             db.dailyReportDao().insert(report);
             
             triggerSync();

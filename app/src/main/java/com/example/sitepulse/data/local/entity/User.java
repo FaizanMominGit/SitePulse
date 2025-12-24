@@ -13,6 +13,8 @@ public class User {
     public String name;
     public String email;
     public String role; // e.g., "Engineer", "Manager"
+    public String fcmToken; // Firebase Cloud Messaging Token
+    public String phoneNumber;
 
     // No-argument constructor required for Firestore deserialization
     public User() {

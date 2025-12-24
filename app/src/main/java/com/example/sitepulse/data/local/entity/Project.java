@@ -22,11 +22,13 @@ public class Project {
 
     // Comma-separated list of User IDs (Engineers)
     public String assignedEngineerIds; 
+    
+    public boolean isArchived; // New field for archiving
 
     // No-argument constructor for Firestore
     public Project() {}
 
-    public Project(@NonNull String id, String name, String location, String description, double latitude, double longitude, double radiusMeters, String assignedEngineerIds) {
+    public Project(@NonNull String id, String name, String location, String description, double latitude, double longitude, double radiusMeters, String assignedEngineerIds, boolean isArchived) {
         this.id = id;
         this.name = name;
         this.location = location;
@@ -35,10 +37,16 @@ public class Project {
         this.longitude = longitude;
         this.radiusMeters = radiusMeters;
         this.assignedEngineerIds = assignedEngineerIds;
+        this.isArchived = isArchived;
+    }
+
+    @Ignore
+    public Project(@NonNull String id, String name, String location, String description, double latitude, double longitude, double radiusMeters, String assignedEngineerIds) {
+        this(id, name, location, description, latitude, longitude, radiusMeters, assignedEngineerIds, false);
     }
     
     @Ignore
     public Project(@NonNull String id, String name, String location, String description, double latitude, double longitude, double radiusMeters) {
-        this(id, name, location, description, latitude, longitude, radiusMeters, "");
+        this(id, name, location, description, latitude, longitude, radiusMeters, "", false);
     }
 }

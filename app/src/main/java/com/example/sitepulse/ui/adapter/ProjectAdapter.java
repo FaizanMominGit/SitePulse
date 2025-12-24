@@ -22,6 +22,7 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ProjectV
 
     public interface OnProjectActionListener {
         void onDeleteClick(Project project);
+        void onArchiveClick(Project project);
         void onItemClick(Project project);
     }
 
@@ -54,13 +55,14 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ProjectV
 
     class ProjectViewHolder extends RecyclerView.ViewHolder {
         TextView tvProjectName, tvProjectLocation;
-        Button btnDelete;
+        Button btnDelete, btnArchive;
 
         public ProjectViewHolder(@NonNull View itemView) {
             super(itemView);
             tvProjectName = itemView.findViewById(R.id.tvProjectName);
             tvProjectLocation = itemView.findViewById(R.id.tvProjectLocation);
             btnDelete = itemView.findViewById(R.id.btnDelete);
+            btnArchive = itemView.findViewById(R.id.btnArchive);
         }
 
         public void bind(Project project) {
@@ -69,6 +71,7 @@ public class ProjectAdapter extends RecyclerView.Adapter<ProjectAdapter.ProjectV
 
             itemView.setOnClickListener(v -> listener.onItemClick(project));
             btnDelete.setOnClickListener(v -> listener.onDeleteClick(project));
+            btnArchive.setOnClickListener(v -> listener.onArchiveClick(project));
         }
     }
 }

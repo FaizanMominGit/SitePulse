@@ -6,6 +6,8 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
+
 import com.example.sitepulse.data.local.entity.Project;
 import java.util.List;
 
@@ -14,19 +16,21 @@ public interface ProjectDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<Project> projects);
 
-    @Query("SELECT * FROM projects")
+    @Update
+    void update(Project project);
+
+    // Filter out archived projects by default
+    @Query("SELECT * FROM projects WHERE isArchived = 0")
     LiveData<List<Project>> getAllProjects();
 
     @Query("SELECT * FROM projects WHERE id = :projectId LIMIT 1")
     LiveData<Project> getProjectById(String projectId);
 
-    @Query("SELECT * FROM projects LIMIT 1")
+    @Query("SELECT * FROM projects WHERE isArchived = 0 LIMIT 1")
     Project getFirstProject();
 
-    // Find projects where assignedEngineerIds contains the userId
-    // Note: This is a simple LIKE query. For robust CSV handling, normalized tables are better, 
-    // but this works for our prototype with comma-separated IDs.
-    @Query("SELECT * FROM projects WHERE assignedEngineerIds LIKE '%' || :userId || '%'")
+    // Find projects where assignedEngineerIds contains the userId AND is not archived
+    @Query("SELECT * FROM projects WHERE assignedEngineerIds LIKE '%' || :userId || '%' AND isArchived = 0")
     LiveData<List<Project>> getProjectsForEngineer(String userId);
     
     @Delete

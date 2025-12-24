@@ -22,6 +22,9 @@ public interface UserDao {
     @Query("SELECT * FROM users WHERE role = 'Engineer'")
     LiveData<List<User>> getAllEngineers();
 
+    @Query("UPDATE users SET fcmToken = :token WHERE id = :userId")
+    void updateFcmToken(String userId, String token);
+
     @Query("DELETE FROM users")
     void clear();
 }
