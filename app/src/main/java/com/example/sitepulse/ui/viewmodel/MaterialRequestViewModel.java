@@ -18,7 +18,7 @@ public class MaterialRequestViewModel extends AndroidViewModel {
         super(application);
         AppDatabase db = AppDatabase.getDatabase(application);
         materialRequestDao = db.materialRequestDao();
-        allMaterialRequests = materialRequestDao.getAllRequests();
+        allMaterialRequests = materialRequestDao.getAllMaterialRequests();
     }
 
     public LiveData<List<MaterialRequest>> getAllMaterialRequests() {

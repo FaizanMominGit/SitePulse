@@ -23,6 +23,10 @@ public interface AttendanceDao {
     @Query("SELECT * FROM attendance WHERE userId = :userId AND projectId = :projectId AND clockInTime >= :startOfDay AND clockInTime < :endOfDay ORDER BY clockInTime DESC LIMIT 1")
     LiveData<Attendance> getTodayAttendanceForProject(String userId, String projectId, long startOfDay, long endOfDay);
 
+    // Get today's attendance for a specific user (regardless of project)
+    @Query("SELECT * FROM attendance WHERE userId = :userId AND clockInTime >= :startOfDay AND clockInTime < :endOfDay ORDER BY clockInTime DESC LIMIT 1")
+    LiveData<Attendance> getTodayAttendance(String userId, long startOfDay, long endOfDay);
+
     @Query("SELECT * FROM attendance WHERE isSynced = 0")
     List<Attendance> getUnsyncedAttendance();
 

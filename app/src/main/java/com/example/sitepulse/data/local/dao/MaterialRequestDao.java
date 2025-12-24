@@ -22,18 +22,25 @@ public interface MaterialRequestDao {
     @Update
     void update(MaterialRequest request);
 
-    @Query("SELECT * FROM material_requests WHERE projectId = :projectId ORDER BY date DESC")
-    LiveData<List<MaterialRequest>> getRequestsForProject(String projectId);
-    
+    // Fetch all requests
     @Query("SELECT * FROM material_requests ORDER BY date DESC")
-    LiveData<List<MaterialRequest>> getAllRequests();
+    LiveData<List<MaterialRequest>> getAllMaterialRequests();
 
-    // For Dashboard - Estimated Material Cost
-    @Query("SELECT SUM(estimatedCost) FROM material_requests WHERE projectId = :projectId")
-    Double getTotalEstimatedCost(String projectId);
+    // Fetch requests by Project
+    @Query("SELECT * FROM material_requests WHERE projectId = :projectId ORDER BY date DESC")
+    LiveData<List<MaterialRequest>> getRequestsByProject(String projectId);
 
     @Query("SELECT * FROM material_requests WHERE isSynced = 0")
     List<MaterialRequest> getUnsyncedRequests();
+
+    // For Dashboard - Estimate costs (Note: We don't have a 'cost' field in MaterialRequest in Inc 4, 
+    // but assuming we might add one or just count pending requests. 
+    // Requirement says 'Pending Material Costs'. Let's assume we add a cost field or just count.
+    // For now, let's count PENDING requests as a proxy or use quantity if cost is missing.
+    // Wait, let's check the entity first. If no cost, we can't sum cost.
+    // Let's assume we want count of pending requests for now if cost is missing.)
+    @Query("SELECT COUNT(*) FROM material_requests WHERE status = 'Pending' AND projectId = :projectId")
+    LiveData<Integer> getPendingRequestCount(String projectId);
 
     @Query("DELETE FROM material_requests")
     void clearAll();

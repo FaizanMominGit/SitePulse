@@ -9,9 +9,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.view.View;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,15 +26,13 @@ import androidx.work.WorkManager;
 import com.example.sitepulse.data.local.AppDatabase;
 import com.example.sitepulse.data.local.entity.Attendance;
 import com.example.sitepulse.data.local.entity.Project;
-import com.example.sitepulse.data.repository.SyncRepository;
 import com.example.sitepulse.util.LocationHelper;
-import com.example.sitepulse.util.NetworkUtils;
 import com.example.sitepulse.worker.SyncWorker;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -44,11 +40,9 @@ public class AttendanceActivity extends AppCompatActivity {
 
     private TextView tvCurrentStatus, tvTime, tvLocationStatus;
     private Button btnClockIn, btnClockOut;
-    private ProgressBar pbSync;
     private LocationHelper locationHelper;
     private AppDatabase db;
     private FirebaseAuth mAuth;
-    private SyncRepository syncRepository;
     private String currentUserId;
     private Attendance currentAttendance;
     private Project currentProject;
@@ -62,42 +56,18 @@ public class AttendanceActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         currentUserId = mAuth.getCurrentUser().getUid();
         locationHelper = new LocationHelper(this);
-        syncRepository = new SyncRepository(db, FirebaseFirestore.getInstance());
 
         initViews();
         checkPermissions();
-        
+
+        // Check if a specific project ID was passed from MainActivity
         String projectId = getIntent().getStringExtra("PROJECT_ID");
         if (projectId != null) {
             loadProject(projectId);
         } else {
+            // Fallback to the first assigned project if no ID is passed
             loadAssignedProject();
         }
-
-        if (NetworkUtils.isNetworkAvailable(this)) {
-            pbSync.setVisibility(View.VISIBLE);
-            syncAttendanceData();
-        } 
-    }
-
-    private void syncAttendanceData() {
-        syncRepository.syncAttendanceForUser(currentUserId, new SyncRepository.SyncCallback() {
-            @Override
-            public void onSuccess() {
-                runOnUiThread(() -> {
-                    pbSync.setVisibility(View.GONE);
-                    Toast.makeText(AttendanceActivity.this, "Attendance synced", Toast.LENGTH_SHORT).show();
-                });
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                runOnUiThread(() -> {
-                    pbSync.setVisibility(View.GONE);
-                    Toast.makeText(AttendanceActivity.this, "Sync failed, showing local data", Toast.LENGTH_SHORT).show();
-                });
-            }
-        });
     }
 
     private void initViews() {
@@ -106,7 +76,6 @@ public class AttendanceActivity extends AppCompatActivity {
         tvLocationStatus = findViewById(R.id.tvLocationStatus);
         btnClockIn = findViewById(R.id.btnClockIn);
         btnClockOut = findViewById(R.id.btnClockOut);
-        pbSync = findViewById(R.id.pbSync);
 
         btnClockIn.setOnClickListener(v -> handleClockIn());
         btnClockOut.setOnClickListener(v -> handleClockOut());
@@ -119,7 +88,9 @@ public class AttendanceActivity extends AppCompatActivity {
                 tvLocationStatus.setText("Site: " + currentProject.name);
                 observeAttendance();
             } else {
-                tvLocationStatus.setText("Project not found");
+                Toast.makeText(this, "Project not found!", Toast.LENGTH_SHORT).show();
+                tvLocationStatus.setText("Error: Project not found");
+                btnClockIn.setEnabled(false);
             }
         });
     }
@@ -127,11 +98,13 @@ public class AttendanceActivity extends AppCompatActivity {
     private void loadAssignedProject() {
         db.projectDao().getProjectsForEngineer(currentUserId).observe(this, projects -> {
             if (projects != null && !projects.isEmpty()) {
+                // This is a fallback, load the first project in the list
                 currentProject = projects.get(0);
                 tvLocationStatus.setText("Site: " + currentProject.name);
                 observeAttendance();
             } else {
                 tvLocationStatus.setText("No Assigned Project");
+                btnClockIn.setEnabled(false);
             }
         });
     }
@@ -177,19 +150,25 @@ public class AttendanceActivity extends AppCompatActivity {
             Toast.makeText(this, "No project assigned. Cannot clock in.", Toast.LENGTH_LONG).show();
             return;
         }
+
         tvLocationStatus.setText("Verifying Location...");
         btnClockIn.setEnabled(false);
-        locationHelper.getCurrentLocation(location -> {
-            if (location != null) {
-                checkGeofenceAndClockIn(location);
-            } else {
-                Toast.makeText(this, "Failed to get location. Try again.", Toast.LENGTH_SHORT).show();
-                btnClockIn.setEnabled(true);
-            }
-        }, e -> {
-            Toast.makeText(this, "Location Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            btnClockIn.setEnabled(true);
-        });
+
+        locationHelper.getCurrentLocation(
+                location -> {
+                    if (location != null) {
+                        checkGeofenceAndClockIn(location);
+                    } else {
+                        tvLocationStatus.setText("Location not found. Please try again.");
+                        btnClockIn.setEnabled(true);
+                    }
+                },
+                e -> {
+                    Toast.makeText(this, "Location Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    tvLocationStatus.setText("Failed to get location. Try again in an open area.");
+                    btnClockIn.setEnabled(true);
+                }
+        );
     }
 
     private void checkGeofenceAndClockIn(Location userLocation) {
@@ -197,7 +176,9 @@ public class AttendanceActivity extends AppCompatActivity {
                 userLocation.getLatitude(), userLocation.getLongitude(),
                 currentProject.latitude, currentProject.longitude, currentProject.radiusMeters
         );
+
         if (isOnSite) {
+            tvLocationStatus.setText("Location Verified! Clocking in...");
             saveClockIn(userLocation);
         } else {
             float distance = LocationHelper.getDistanceInMeters(userLocation.getLatitude(), userLocation.getLongitude(), currentProject.latitude, currentProject.longitude);
@@ -270,10 +251,7 @@ public class AttendanceActivity extends AppCompatActivity {
     private final ActivityResultLauncher<String[]> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
                 Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
-                Boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
-                if (fineLocationGranted != null && fineLocationGranted) {
-                    // Permission granted
-                } else {
+                if (fineLocationGranted == null || !fineLocationGranted) {
                     Toast.makeText(this, "Location permission required for attendance", Toast.LENGTH_LONG).show();
                     finish();
                 }

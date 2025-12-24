@@ -17,19 +17,20 @@ public interface TaskDao {
     @Update
     void update(Task task);
 
-    @Query("SELECT * FROM tasks WHERE projectId = :projectId ORDER BY timestamp DESC")
+    @Query("SELECT * FROM tasks WHERE projectId = :projectId")
     LiveData<List<Task>> getTasksForProject(String projectId);
     
-    @Query("SELECT * FROM tasks")
-    LiveData<List<Task>> getAllTasks();
-
-    // For Dashboard - Task Progress
-    // Since 'status' column doesn't exist, we use 'isCompleted'
-    @Query("SELECT isCompleted FROM tasks WHERE projectId = :projectId")
-    List<Boolean> getTaskCompletionStatus(String projectId);
-
     @Query("SELECT * FROM tasks WHERE isSynced = 0")
-    List<Task> getUnsyncedTasks(); // Not LiveData, for Worker
+    List<Task> getUnsyncedTasks();
+
+    // For Dashboard - Task completion stats
+    // Returns List of status strings. We will count manually in code or use GROUP BY if return type is complex
+    // Simplified: Return completed count
+    @Query("SELECT COUNT(*) FROM tasks WHERE projectId = :projectId AND isCompleted = 1")
+    LiveData<Integer> getCompletedTaskCount(String projectId);
+
+    @Query("SELECT COUNT(*) FROM tasks WHERE projectId = :projectId AND isCompleted = 0")
+    LiveData<Integer> getPendingTaskCount(String projectId);
 
     @Query("DELETE FROM tasks")
     void clearAll();

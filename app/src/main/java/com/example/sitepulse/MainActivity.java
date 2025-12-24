@@ -36,7 +36,6 @@ import com.example.sitepulse.ui.adapter.TaskAdapter;
 import com.example.sitepulse.util.NetworkUtils;
 import com.example.sitepulse.util.NotificationHelper;
 import com.example.sitepulse.worker.SyncWorker;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -47,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
@@ -57,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvTasks;
     private Button btnOpenAttendance, btnOpenDpr, btnOpenMaterials, btnOpenInvoices;
     private ImageButton btnProfile;
-    private FloatingActionButton fabAddTask;
     private ProgressBar pbProjectSync;
 
     private TaskAdapter taskAdapter;
@@ -116,10 +113,6 @@ public class MainActivity extends AppCompatActivity {
 
         btnProfile.setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, ProfileActivity.class));
-        });
-
-        fabAddTask.setOnClickListener(v -> {
-            addDummyTask();
         });
 
         btnOpenAttendance.setOnClickListener(v -> {
@@ -213,7 +206,6 @@ public class MainActivity extends AppCompatActivity {
         tvLocation = findViewById(R.id.tvLocation);
         rvTasks = findViewById(R.id.rvTasks);
         btnProfile = findViewById(R.id.btnProfile);
-        fabAddTask = findViewById(R.id.fabAddTask);
         btnOpenAttendance = findViewById(R.id.btnOpenAttendance);
         btnOpenDpr = findViewById(R.id.btnOpenDpr);
         btnOpenMaterials = findViewById(R.id.btnOpenMaterials);
@@ -345,24 +337,5 @@ public class MainActivity extends AppCompatActivity {
         db.taskDao().getTasksForProject(projectId).observe(this, tasks -> {
             taskAdapter.setTasks(tasks);
         });
-    }
-
-    private void addDummyTask() {
-        if (currentProject != null) {
-            AppDatabase.databaseWriteExecutor.execute(() -> {
-                Task task = new Task(
-                        UUID.randomUUID().toString(),
-                        currentProject.id,
-                        "New Task " + System.currentTimeMillis(),
-                        "This is a generated task description.",
-                        false,
-                        System.currentTimeMillis()
-                );
-                db.taskDao().insertAll(java.util.Collections.singletonList(task));
-                triggerImmediateSync();
-            });
-        } else {
-            Toast.makeText(this, "No project selected to add task", Toast.LENGTH_SHORT).show();
-        }
     }
 }

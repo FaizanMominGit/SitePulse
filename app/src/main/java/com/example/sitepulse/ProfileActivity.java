@@ -21,7 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 public class ProfileActivity extends AppCompatActivity {
 
     private TextInputEditText etName, etEmail, etPhone, etRole;
-    private Button btnSaveProfile, btnLogout, btnTestCrash;
+    private Button btnSaveProfile, btnLogout;
     private TextView tvAppVersion;
     
     private AppDatabase db;
@@ -49,13 +49,6 @@ public class ProfileActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
-
-        // Test Crash Button - For Development Only
-        // Set visibility to VISIBLE to test, then back to GONE
-        btnTestCrash.setVisibility(View.GONE); 
-        btnTestCrash.setOnClickListener(v -> {
-            throw new RuntimeException("Test Crash for SitePulse");
-        });
     }
 
     private void initViews() {
@@ -65,7 +58,6 @@ public class ProfileActivity extends AppCompatActivity {
         etRole = findViewById(R.id.etRole);
         btnSaveProfile = findViewById(R.id.btnSaveProfile);
         btnLogout = findViewById(R.id.btnLogout);
-        btnTestCrash = findViewById(R.id.btnTestCrash);
         tvAppVersion = findViewById(R.id.tvAppVersion);
     }
 

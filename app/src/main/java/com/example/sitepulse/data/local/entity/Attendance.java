@@ -13,11 +13,10 @@ public class Attendance {
     public String userId;
     public String projectId;
     public long clockInTime;
-    public long clockOutTime;
-    public String status;
+    public long clockOutTime; // 0 if currently working
+    public String status; // e.g., "PRESENT"
     public double latitude;
     public double longitude;
-    
     public boolean isSynced;
 
     // No-argument constructor for Firestore

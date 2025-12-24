@@ -84,7 +84,7 @@ public class MaterialListActivity extends AppCompatActivity {
     private void loadRequests() {
         if (currentProjectId == null) return;
         
-        db.materialRequestDao().getRequestsForProject(currentProjectId).observe(this, new Observer<List<MaterialRequest>>() {
+        db.materialRequestDao().getRequestsByProject(currentProjectId).observe(this, new Observer<List<MaterialRequest>>() {
             @Override
             public void onChanged(List<MaterialRequest> requests) {
                 materialAdapter.setRequests(requests);

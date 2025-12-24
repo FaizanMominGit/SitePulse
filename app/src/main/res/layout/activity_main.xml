@@ -199,16 +199,6 @@
         app:layout_constraintTop_toBottomOf="@+id/tvTasksTitle"
         tools:listitem="@layout/item_task" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddTask"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="24dp"
-        android:contentDescription="Add Task"
-        android:src="@android:drawable/ic_input_add"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
     <ProgressBar
         android:id="@+id/pbProjectSync"
         style="?android:attr/progressBarStyleHorizontal"
