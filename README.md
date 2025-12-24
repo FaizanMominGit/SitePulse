@@ -63,4 +63,4 @@ The project follows standard Android directory structure:
 
 ## 📜 License
 
-This project is created as a solution for a construction management problem statement.
+This project is licensed under the MIT License. See the [LICENSE file](https://github.com/FaizanMominGit/SitePulse/blob/main/LICENSE) for details.
