@@ -24,8 +24,8 @@ import com.example.sitepulse.data.local.entity.User;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-// Updated version to 11 after adding isArchived to Project entity
-@Database(entities = {Project.class, Task.class, User.class, Attendance.class, DailyReport.class, MaterialRequest.class, Invoice.class}, version = 11, exportSchema = false)
+// Updated version to 12 after adding isSynced to Project entity
+@Database(entities = {Project.class, Task.class, User.class, Attendance.class, DailyReport.class, MaterialRequest.class, Invoice.class}, version = 12, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ProjectDao projectDao();

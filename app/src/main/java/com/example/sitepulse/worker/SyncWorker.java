@@ -10,7 +10,9 @@ import androidx.work.WorkerParameters;
 import com.example.sitepulse.data.local.AppDatabase;
 import com.example.sitepulse.data.local.entity.Attendance;
 import com.example.sitepulse.data.local.entity.DailyReport;
+import com.example.sitepulse.data.local.entity.Invoice;
 import com.example.sitepulse.data.local.entity.MaterialRequest;
+import com.example.sitepulse.data.local.entity.Project;
 import com.example.sitepulse.data.local.entity.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -41,16 +43,106 @@ public class SyncWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
+        boolean projectSyncSuccess = syncProjects();
         boolean taskSyncSuccess = syncTasks();
         boolean attendanceSyncSuccess = syncAttendance();
         boolean reportSyncSuccess = syncDailyReports();
         boolean materialSyncSuccess = syncMaterialRequests();
+        boolean invoiceSyncSuccess = syncInvoices(); // Added this
 
-        if (taskSyncSuccess && attendanceSyncSuccess && reportSyncSuccess && materialSyncSuccess) {
+        if (projectSyncSuccess && taskSyncSuccess && attendanceSyncSuccess && reportSyncSuccess && materialSyncSuccess && invoiceSyncSuccess) {
             return Result.success();
         } else {
             return Result.retry();
         }
+    }
+
+    private boolean syncInvoices() {
+        List<Invoice> unsyncedInvoices = db.invoiceDao().getUnsyncedInvoices();
+        if (unsyncedInvoices.isEmpty()) return true;
+
+        CountDownLatch latch = new CountDownLatch(unsyncedInvoices.size());
+        boolean[] hasErrors = {false};
+
+        for (Invoice invoice : unsyncedInvoices) {
+            Map<String, Object> invoiceMap = new HashMap<>();
+            invoiceMap.put("id", invoice.id);
+            invoiceMap.put("projectId", invoice.projectId);
+            invoiceMap.put("invoiceNumber", invoice.invoiceNumber);
+            invoiceMap.put("clientName", invoice.clientName);
+            invoiceMap.put("description", invoice.description);
+            invoiceMap.put("subtotal", invoice.subtotal);
+            invoiceMap.put("gstRate", invoice.gstRate);
+            invoiceMap.put("gstAmount", invoice.gstAmount);
+            invoiceMap.put("totalAmount", invoice.totalAmount);
+            invoiceMap.put("status", invoice.status);
+            invoiceMap.put("date", invoice.date);
+
+            firestore.collection("invoices").document(invoice.id)
+                    .set(invoiceMap)
+                    .addOnSuccessListener(aVoid -> {
+                        AppDatabase.databaseWriteExecutor.execute(() -> {
+                            invoice.isSynced = true;
+                            db.invoiceDao().update(invoice);
+                            latch.countDown();
+                        });
+                    })
+                    .addOnFailureListener(e -> {
+                        hasErrors[0] = true;
+                        latch.countDown();
+                    });
+        }
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            return false;
+        }
+
+        return !hasErrors[0];
+    }
+
+    private boolean syncProjects() {
+        List<Project> unsyncedProjects = db.projectDao().getUnsyncedProjects();
+        if (unsyncedProjects.isEmpty()) return true;
+
+        CountDownLatch latch = new CountDownLatch(unsyncedProjects.size());
+        boolean[] hasErrors = {false};
+
+        for (Project project : unsyncedProjects) {
+            Map<String, Object> projectMap = new HashMap<>();
+            projectMap.put("id", project.id);
+            projectMap.put("name", project.name);
+            projectMap.put("location", project.location);
+            projectMap.put("description", project.description);
+            projectMap.put("latitude", project.latitude);
+            projectMap.put("longitude", project.longitude);
+            projectMap.put("radiusMeters", project.radiusMeters);
+            projectMap.put("assignedEngineerIds", project.assignedEngineerIds);
+            projectMap.put("isArchived", project.isArchived);
+
+            firestore.collection("projects").document(project.id)
+                    .set(projectMap)
+                    .addOnSuccessListener(aVoid -> {
+                        AppDatabase.databaseWriteExecutor.execute(() -> {
+                            project.isSynced = true;
+                            db.projectDao().update(project);
+                            latch.countDown();
+                        });
+                    })
+                    .addOnFailureListener(e -> {
+                        hasErrors[0] = true;
+                        latch.countDown();
+                    });
+        }
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            return false;
+        }
+
+        return !hasErrors[0];
     }
 
     private boolean syncTasks() {

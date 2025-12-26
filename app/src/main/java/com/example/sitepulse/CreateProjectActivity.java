@@ -11,15 +11,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.example.sitepulse.data.local.AppDatabase;
 import com.example.sitepulse.data.local.entity.Project;
 import com.example.sitepulse.ui.adapter.EngineerSelectionAdapter;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.sitepulse.util.NotificationTrigger;
+import com.example.sitepulse.worker.SyncWorker;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -32,11 +37,11 @@ public class CreateProjectActivity extends AppCompatActivity {
     private TextView tvCreateProjectTitle;
 
     private AppDatabase localDb;
-    private FirebaseFirestore remoteDb;
     private EngineerSelectionAdapter adapter;
 
     private String currentProjectId;
     private Project currentProject;
+    private Set<String> initialEngineerIds = new HashSet<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,12 +49,11 @@ public class CreateProjectActivity extends AppCompatActivity {
         setContentView(R.layout.activity_create_project);
 
         localDb = AppDatabase.getDatabase(this);
-        remoteDb = FirebaseFirestore.getInstance();
 
         initViews();
         setupRecyclerView();
         setupSearchView();
-        observeLocalEngineers(); // The only data source for the UI
+        observeLocalEngineers();
 
         if (getIntent().hasExtra("PROJECT_ID")) {
             currentProjectId = getIntent().getStringExtra("PROJECT_ID");
@@ -130,9 +134,9 @@ public class CreateProjectActivity extends AppCompatActivity {
     private void setSelectedEngineers() {
         if (currentProject.assignedEngineerIds != null && !currentProject.assignedEngineerIds.isEmpty()) {
             String[] engineerIds = currentProject.assignedEngineerIds.split(",");
-            Set<String> selectedIds = adapter.getSelectedEngineerIds();
-            selectedIds.clear();
-            selectedIds.addAll(Arrays.asList(engineerIds));
+            initialEngineerIds.clear();
+            initialEngineerIds.addAll(Arrays.asList(engineerIds));
+            adapter.setSelectedEngineerIds(initialEngineerIds);
             adapter.notifyDataSetChanged();
         }
     }
@@ -160,35 +164,41 @@ public class CreateProjectActivity extends AppCompatActivity {
             return;
         }
 
-        Set<String> selectedIds = adapter.getSelectedEngineerIds();
-        String assignedEngineerIds = TextUtils.join(",", selectedIds);
+        Set<String> finalEngineerIds = adapter.getSelectedEngineerIds();
+        String assignedEngineerIdsStr = TextUtils.join(",", finalEngineerIds);
 
         String projectId = (currentProjectId != null) ? currentProjectId : UUID.randomUUID().toString();
 
-        Project project = new Project(projectId, name, location, description, latitude, longitude, radius, assignedEngineerIds);
+        Project project = new Project(projectId, name, location, description, latitude, longitude, radius, assignedEngineerIdsStr, false, false);
 
-        Map<String, Object> projectMap = new HashMap<>();
-        projectMap.put("id", project.id);
-        projectMap.put("name", project.name);
-        projectMap.put("location", project.location);
-        projectMap.put("description", project.description);
-        projectMap.put("latitude", project.latitude);
-        projectMap.put("longitude", project.longitude);
-        projectMap.put("radiusMeters", project.radiusMeters);
-        projectMap.put("assignedEngineerIds", project.assignedEngineerIds);
+        // Save to local DB first
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            localDb.projectDao().insertAll(Collections.singletonList(project));
+            triggerSync();
 
-        remoteDb.collection("projects").document(projectId).set(projectMap)
-                .addOnSuccessListener(aVoid -> {
-                    AppDatabase.databaseWriteExecutor.execute(() -> {
-                        localDb.projectDao().insertAll(java.util.Collections.singletonList(project));
-                        runOnUiThread(() -> {
-                            Toast.makeText(CreateProjectActivity.this, "Project saved successfully!", Toast.LENGTH_SHORT).show();
-                            finish();
-                        });
-                    });
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(CreateProjectActivity.this, "Failed to save project: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+            // Trigger notifications for newly assigned engineers
+            for (String engineerId : finalEngineerIds) {
+                if (!initialEngineerIds.contains(engineerId)) {
+                    String title = "New Project Assignment";
+                    String body = "You have been assigned to a new project: " + name;
+                    NotificationTrigger.sendNotification(engineerId, title, body);
+                }
+            }
+
+            runOnUiThread(() -> {
+                Toast.makeText(CreateProjectActivity.this, "Project saved!", Toast.LENGTH_SHORT).show();
+                finish();
+            });
+        });
+    }
+
+    private void triggerSync() {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+        OneTimeWorkRequest syncRequest = new OneTimeWorkRequest.Builder(SyncWorker.class)
+                .setConstraints(constraints)
+                .build();
+        WorkManager.getInstance(this).enqueue(syncRequest);
     }
 }

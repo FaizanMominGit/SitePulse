@@ -9,6 +9,7 @@ import com.example.sitepulse.data.local.entity.Invoice;
 import com.example.sitepulse.data.local.entity.MaterialRequest;
 import com.example.sitepulse.data.local.entity.Project;
 import com.example.sitepulse.data.local.entity.User;
+import com.example.sitepulse.util.NotificationTrigger;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -142,6 +143,11 @@ public class SyncRepository {
                     request.status = newStatus;
                     AppDatabase.databaseWriteExecutor.execute(() -> {
                         localDb.materialRequestDao().update(request);
+                        // Trigger Notification
+                        String title = "Material Request Updated";
+                        String body = "Your request for '" + request.itemName + "' has been " + newStatus + ".";
+                        NotificationTrigger.sendNotification(request.userId, title, body);
+                        
                         if (callback != null) {
                             callback.onSuccess();
                         }
@@ -163,6 +169,15 @@ public class SyncRepository {
     }
 
     private void syncProjectsInternal() throws ExecutionException, InterruptedException {
+        // Upload local changes first
+        List<Project> unsynced = localDb.projectDao().getUnsyncedProjects();
+        for (Project p : unsynced) {
+            remoteDb.collection("projects").document(p.id).set(p);
+            p.isSynced = true;
+            localDb.projectDao().update(p);
+        }
+
+        // Download remote changes
         List<Project> projects = fetchProjects();
         localDb.projectDao().insertAll(projects);
         Log.d(TAG, "Synced " + projects.size() + " projects.");
@@ -225,7 +240,9 @@ public class SyncRepository {
             if (snapshots != null) {
                 List<Project> projects = new ArrayList<>();
                 for (QueryDocumentSnapshot doc : snapshots) {
-                    projects.add(doc.toObject(Project.class));
+                    Project p = doc.toObject(Project.class);
+                    p.isSynced = true; // Mark as synced from server
+                    projects.add(p);
                 }
                 AppDatabase.databaseWriteExecutor.execute(() -> localDb.projectDao().insertAll(projects));
                 Log.d(TAG, "Real-time: Synced " + projects.size() + " projects.");
@@ -313,7 +330,9 @@ public class SyncRepository {
             List<Project> list = new ArrayList<>();
             if (t.isSuccessful()) {
                 for (QueryDocumentSnapshot doc : t.getResult()) {
-                    list.add(doc.toObject(Project.class));
+                    Project p = doc.toObject(Project.class);
+                    p.isSynced = true; // Mark as synced from server
+                    list.add(p);
                 }
             }
             return list;

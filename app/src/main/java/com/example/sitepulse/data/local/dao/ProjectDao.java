@@ -33,6 +33,9 @@ public interface ProjectDao {
     @Query("SELECT * FROM projects WHERE assignedEngineerIds LIKE '%' || :userId || '%' AND isArchived = 0")
     LiveData<List<Project>> getProjectsForEngineer(String userId);
     
+    @Query("SELECT * FROM projects WHERE isSynced = 0")
+    List<Project> getUnsyncedProjects();
+
     @Delete
     void delete(Project project);
 

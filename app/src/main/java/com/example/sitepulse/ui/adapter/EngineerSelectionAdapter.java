@@ -28,6 +28,12 @@ public class EngineerSelectionAdapter extends RecyclerView.Adapter<EngineerSelec
         this.filteredEngineers = new ArrayList<>(engineers);
         notifyDataSetChanged();
     }
+
+    public void setSelectedEngineerIds(Set<String> selectedIds) {
+        this.selectedEngineerIds.clear();
+        this.selectedEngineerIds.addAll(selectedIds);
+        notifyDataSetChanged();
+    }
     
     public void filter(String query) {
         filteredEngineers.clear();
