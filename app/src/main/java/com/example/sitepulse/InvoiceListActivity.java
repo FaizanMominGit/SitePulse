@@ -2,6 +2,7 @@ package com.example.sitepulse;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +18,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class InvoiceListActivity extends AppCompatActivity {
+
+    private static final String TAG = "InvoiceListActivity";
 
     private RecyclerView rvInvoices;
     private FloatingActionButton fabCreateInvoice;
@@ -40,6 +43,7 @@ public class InvoiceListActivity extends AppCompatActivity {
             currentProjectId = getIntent().getStringExtra("PROJECT_ID");
             loadInvoices();
         } else {
+            // Fallback if no project is specified (e.g., from Manager Dashboard)
             loadCurrentProjectId();
         }
 
@@ -102,10 +106,20 @@ public class InvoiceListActivity extends AppCompatActivity {
     }
 
     private void loadInvoices() {
-        if (currentProjectId == null) return;
+        if (currentProjectId == null) {
+            Log.e(TAG, "Cannot load invoices, currentProjectId is null.");
+            return;
+        }
+
+        Log.d(TAG, "Loading invoices for Project ID: " + currentProjectId);
 
         db.invoiceDao().getInvoicesForProject(currentProjectId).observe(this, invoices -> {
-            adapter.setInvoices(invoices);
+            if (invoices != null) {
+                Log.d(TAG, "Observer received " + invoices.size() + " invoices.");
+                adapter.setInvoices(invoices);
+            } else {
+                Log.w(TAG, "Observer received a null list of invoices.");
+            }
         });
     }
 }

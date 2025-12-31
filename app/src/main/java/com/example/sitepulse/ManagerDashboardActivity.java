@@ -79,8 +79,17 @@ public class ManagerDashboardActivity extends AppCompatActivity {
         btnManageProjects.setOnClickListener(v -> startActivity(new Intent(ManagerDashboardActivity.this, ManagerProjectListActivity.class)));
         btnViewReports.setOnClickListener(v -> startActivity(new Intent(ManagerDashboardActivity.this, ManagerDprListActivity.class)));
         btnMaterialRequests.setOnClickListener(v -> startActivity(new Intent(ManagerDashboardActivity.this, ManagerMaterialListActivity.class)));
-        btnInvoices.setOnClickListener(v -> startActivity(new Intent(ManagerDashboardActivity.this, InvoiceListActivity.class)));
         btnProfile.setOnClickListener(v -> startActivity(new Intent(ManagerDashboardActivity.this, ProfileActivity.class)));
+        
+        btnInvoices.setOnClickListener(v -> {
+            if (selectedProject != null) {
+                Intent intent = new Intent(ManagerDashboardActivity.this, InvoiceListActivity.class);
+                intent.putExtra("PROJECT_ID", selectedProject.id);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Please select a project first", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
     
     private void setupCharts() {
@@ -201,12 +210,6 @@ public class ManagerDashboardActivity extends AppCompatActivity {
     }
 
     private void loadTaskProgress(String projectId) {
-        // Since Room returns LiveData<Integer> for separate counts, we observe them combined or fetch in background
-        // For simplicity, let's just use a background thread to get snapshot values if DAO allowed synchronous access,
-        // but our DAO returns LiveData. So we have to nest observers or add synchronous methods.
-        // Let's add synchronous methods to DAO or just assume we have observers.
-        // Actually, we can just observe both and update chart when both arrive.
-        
         db.taskDao().getCompletedTaskCount(projectId).observe(this, completed -> {
             db.taskDao().getPendingTaskCount(projectId).observe(this, pending -> {
                 updatePieChart(completed != null ? completed : 0, pending != null ? pending : 0);
