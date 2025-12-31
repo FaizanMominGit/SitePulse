@@ -3,8 +3,7 @@ package com.example.sitepulse;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -28,6 +27,10 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -48,6 +51,7 @@ public class ManagerDashboardActivity extends AppCompatActivity {
     private PieChart chartTasks;
     
     private AppDatabase db;
+    private FirebaseAuth mAuth;
     private List<Project> allProjects = new ArrayList<>();
     private Project selectedProject;
 
@@ -57,10 +61,38 @@ public class ManagerDashboardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_manager_dashboard);
 
         db = AppDatabase.getDatabase(this);
+        mAuth = FirebaseAuth.getInstance();
 
         initViews();
         setupCharts();
         loadProjects();
+
+        // Save FCM token for manager notifications
+        fetchAndSaveFcmToken();
+    }
+
+    private void fetchAndSaveFcmToken() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.w("FCM_DEBUG", "Fetching FCM registration token failed", task.getException());
+                        return;
+                    }
+                    String token = task.getResult();
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    if (user != null && token != null) {
+                        // Update in local DB
+                        AppDatabase.databaseWriteExecutor.execute(() -> {
+                            db.userDao().updateFcmToken(user.getUid(), token);
+                        });
+                        // Update in Firestore
+                        FirebaseFirestore.getInstance().collection("users")
+                                .document(user.getUid())
+                                .update("fcmToken", token)
+                                .addOnSuccessListener(aVoid -> Log.d("FCM_DEBUG", "Manager FCM Token saved to Firestore."))
+                                .addOnFailureListener(e -> Log.e("FCM_DEBUG", "Failed to save manager FCM Token to Firestore.", e));
+                    }
+                });
     }
 
     private void initViews() {
@@ -190,6 +222,7 @@ public class ManagerDashboardActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 if (entries.isEmpty()) {
                     chartLabor.clear();
+                    chartLabor.invalidate();
                     return;
                 }
 
@@ -220,6 +253,7 @@ public class ManagerDashboardActivity extends AppCompatActivity {
     private void updatePieChart(int completed, int pending) {
         if (completed == 0 && pending == 0) {
             chartTasks.clear();
+            chartTasks.invalidate();
             return;
         }
         
